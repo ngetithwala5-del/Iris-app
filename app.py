@@ -1,36 +1,21 @@
-import joblib
-model = joblib.load("digit_model.pkl")
-
-from PIL import Image
-import numpy as np
 import streamlit as st
+import joblib
+import numpy as np
 
-def preprocess_image(image):
-    image = image.convert('L')  # grayscale
-    image = image.resize((8, 8), Image.Resampling.LANCZOS)
+# Load model
+model = joblib.load("iris_model.pkl")
 
-    image_array = np.array(image)
+st.title("🌸 Iris Flower Prediction App")
 
-    # 🔥 Invert colors (important!)
-    image_array = 255 - image_array  
+# Inputs
+sepal_length = st.number_input("Sepal Length")
+sepal_width = st.number_input("Sepal Width")
+petal_length = st.number_input("Petal Length")
+petal_width = st.number_input("Petal Width")
 
-    image_array = np.where(image_array > 128, 255, 0)
+# Predict button
+if st.button("Predict"):
+    data = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
+    prediction = model.predict(data)
 
-    # scale to 0–16
-    image_scaled = (16 * (image_array / 255)).astype(np.float32)
-
-    return image_scaled.flatten().reshape(1, -1)
-
-uploaded_file = st.file_uploader("Upload a digit image", type=["png", "jpg", "jpeg"])
-
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-
-    st.image(image, caption="Uploaded Image", width=150)
-
-    processed_image = preprocess_image(image)
-
-    # 👇 Add button
-    if st.button("Predict"):
-        prediction = model.predict(processed_image)
-        st.success(f"Prediction: {prediction[0]}")
+    st.success(f"Prediction: {prediction[0]}")
